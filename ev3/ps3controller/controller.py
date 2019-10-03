@@ -1,5 +1,27 @@
 #!/usr/bin/env python3
 
+'''
+PS3 controller connector & handler.
+
+Example usage
+
+    from ps3controller.controller import buttons, sticks, Buttons, Sticks
+
+    def exampleFunction():
+        # change state variable
+        # don't do "expensive" stuff
+
+    # exampleFunction will be called when X is pressed on the PS3 controller
+    buttons.add(Button.X, exampleFunction)
+
+    def exampleStick(value):
+        # value represents how much the stick is pushed forward
+        # change state variable for the stick
+        # don't do "expensive" stuff
+
+    sticks.add(Sticks.LEFT_X, exampleStick)
+'''
+
 # This is a linux-specific module.
 # It is required by the Button class, but failure to import it may be
 # safely ignored if one just needs to run API tests on Windows.
