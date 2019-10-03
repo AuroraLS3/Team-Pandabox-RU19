@@ -5,7 +5,10 @@ PS3 controller connector & handler.
 
 Example usage
 
-    from ps3controller.controller import buttons, sticks, Buttons, Sticks
+    from ps3controller.controller import buttons, sticks, Buttons, Sticks, is_controller_connected
+
+    if not is_controller_connected():
+        return
 
     def exampleFunction():
         # change state variable
@@ -29,6 +32,9 @@ import evdev
 
 import threading
 import math
+import time
+
+from logging import debug
 
 ## Some helpers ##
 
@@ -69,6 +75,7 @@ class ButtonListeners:
         for listener in self.listeners[button]:
             listener()
 
+
 class StickListeners:
     def __init__(self):
         self.listeners = {
@@ -92,21 +99,33 @@ class StickListeners:
 
 
 class ControllerPollThread(threading.Thread):
-    def __init__(self, button_listeners, stick_listeners):
-        ## Initializing ##
-
-        print("Finding ps3 controller...")
+    def _find_controller(self):
+        debug("Finding ps3 controller...")
         devices = [evdev.InputDevice(fn) for fn in evdev.list_devices()]
         for device in devices:
             if device.name == 'PLAYSTATION(R)3 Controller':
                 ps3dev = device.fn
+                self.gamepad = evdev.InputDevice(ps3dev)
+        if not self.gamepad:
+            time.sleep(1)
 
-        self.gamepad = evdev.InputDevice(ps3dev)
+    def __init__(self, button_listeners, stick_listeners):
+        ## Initializing ##
+        self.find_attempts = 0
+
         self.button_listeners = button_listeners
         self.stick_listeners = stick_listeners
         threading.Thread.__init__(self)
 
     def run(self):
+        while not self.gamepad and self.find_attempts < 5:
+            self._find_controller()
+
+        if not self.gamepad:
+            return  # assuming that the thread execution ends here.
+
+        debug("Found controller.")
+
         BUTTON_PRESS = 1
         STICK_MOVE = 3
 
@@ -115,9 +134,9 @@ class ControllerPollThread(threading.Thread):
                 self.button_listeners.call(event.code)
             elif event.type == STICK_MOVE:
                 self.stick_listeners.call(event.code, scale_stick(event.value))
-                # if event.type == 2 or event.type == 1 or event.type == 0:
-                #     if event.value != 0:
-                #         print("%s %s %s" % (event.type, event.code, event.value))
+            # if event.type == 2 or event.type == 1 or event.type == 0:
+            #     if event.value != 0:
+            #         print("%s %s %s" % (event.type, event.code, event.value))
 
 
 buttons = ButtonListeners()
@@ -127,6 +146,10 @@ sticks = StickListeners()
 controller_thread = ControllerPollThread(buttons, sticks)
 controller_thread.setDaemon(True)
 controller_thread.start()
+
+
+def is_controller_connected():
+    return bool(controller_thread.gamepad)
 
 
 class Buttons:
