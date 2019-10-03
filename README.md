@@ -1,9 +1,13 @@
 # Team-Pandabox-RU19
 Robot Uprising Team Pandabox -repository
 
-## Important notes
+## Pushing to repository:
 
-- Branch `master` is protected from direct push access. [Create a new branch](https://github.com/Kunena/Kunena-Forum/wiki/Create-a-new-branch-with-git-and-manage-branches) and open a Pull Request to get your code on the `master` branch.
+After commit:
+```
+git pull --rebase
+git push
+```
 
 ## Set-up
 
