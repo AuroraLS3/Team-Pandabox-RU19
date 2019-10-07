@@ -5,7 +5,7 @@ PS3 controller connector & handler.
 
 Example usage
 
-    from ps3controller.controller import buttons, sticks, Buttons, Sticks, is_controller_connected
+    from devices.controller import buttons, sticks, Buttons, Sticks, is_controller_connected
 
     if not is_controller_connected():
         return
@@ -53,24 +53,44 @@ def scale(val, src, dst):
 def scale_stick(value):
     return scale(value, (0, 255), (-100, 100))
 
+class Buttons:
+    ANY = 0
+    X = 304
+    CIRCLE = 305
+    TRIANGLE = 307
+    SQUARE = 308
+    L1 = 310
+    R1 = 311
+    SELECT = 314
+    START = 315
+
+
+class Sticks:
+    ANY = 0
+    LEFT_X = 0
+    LEFT_Y = 1
+    L2 = 2
+    RIGHT_X = 3
+    RIGHT_Y = 4
+    R2 = 5
+
+
 
 class ButtonListeners:
     def __init__(self):
         self.listeners = {
-            0: []  # Listeners are higher order functions. ##
+            Buttons.ANY: []  # Listeners are higher order functions. ##
         }
 
     def add(self, button, function):
-        button_listeners = self.listeners[button]
-        if not button_listeners:
-            button_listeners = []
-
-        button_listeners.append(function)
-        self.listeners[button] = button_listeners
+        self.listeners.setdefault(button, []).append(function)
 
     def call(self, button):
-        button_listeners = self.listeners[button]
-        if not button_listeners:
+        if button != Buttons.ANY:
+            debug("Pressed button: %s" % button)
+            self.call(Buttons.ANY)
+
+        if not button in self.listeners:
             return
         for listener in self.listeners[button]:
             listener()
@@ -79,20 +99,17 @@ class ButtonListeners:
 class StickListeners:
     def __init__(self):
         self.listeners = {
-            0: []  # Listeners are higher order functions.
+            Sticks.ANY: []  # Listeners are higher order functions.
         }
 
     def add(self, stick, function):
-        stick_listeners = self.listeners[stick]
-        if not stick_listeners:
-            stick_listeners = []
-
-        stick_listeners.append(function)
-        self.listeners[stick] = stick_listeners
+        self.listeners.setdefault(stick, []).append(function)
 
     def call(self, stick, value):
-        stick_listeners = self.listeners[stick]
-        if not stick_listeners:
+        if stick != Sticks.ANY:
+            self.call(Sticks.ANY, value)
+        
+        if not stick in self.listeners:
             return
         for listener in self.listeners[stick]:
             listener(value)
@@ -103,7 +120,7 @@ class ControllerPollThread(threading.Thread):
         debug("Finding ps3 controller...")
         devices = [evdev.InputDevice(fn) for fn in evdev.list_devices()]
         for device in devices:
-            if device.name == 'PLAYSTATION(R)3 Controller':
+            if device.name == 'Sony PLAYSTATION(R)3 Controller':
                 ps3dev = device.fn
                 self.gamepad = evdev.InputDevice(ps3dev)
         if not self.gamepad:
@@ -113,6 +130,7 @@ class ControllerPollThread(threading.Thread):
         ## Initializing ##
         self.find_attempts = 0
 
+        self.gamepad = None
         self.button_listeners = button_listeners
         self.stick_listeners = stick_listeners
         threading.Thread.__init__(self)
@@ -150,23 +168,3 @@ controller_thread.start()
 
 def is_controller_connected():
     return bool(controller_thread.gamepad)
-
-
-class Buttons:
-    X = 304
-    CIRCLE = 305
-    TRIANGLE = 307
-    SQUARE = 308
-    L1 = 310
-    R1 = 311
-    SELECT = 314
-    START = 315
-
-
-class Sticks:
-    LEFT_X = 0
-    LEFT_Y = 1
-    L2 = 2
-    RIGHT_X = 3
-    RIGHT_Y = 4
-    R2 = 5
