@@ -53,7 +53,7 @@ def scale(val, src, dst):
 def scale_stick(value):
     return scale(value, (0, 255), (-100, 100))
 
-class Buttons:
+class Button:
     ANY = 0
     X = 304
     CIRCLE = 305
@@ -61,11 +61,20 @@ class Buttons:
     SQUARE = 308
     L1 = 310
     R1 = 311
+    L2 = 312
+    R2 = 313
+    R2_STICK = 317
+    R3_STICK = 318
     SELECT = 314
     START = 315
+    UP = 544
+    DOWN = 545
+    LEFT = 546
+    RIGHT = 547
+    WAKE_CONTROLLER = 316
 
 
-class Sticks:
+class Stick:
     ANY = 0
     LEFT_X = 0
     LEFT_Y = 1
@@ -79,16 +88,16 @@ class Sticks:
 class ButtonListeners:
     def __init__(self):
         self.listeners = {
-            Buttons.ANY: []  # Listeners are higher order functions. ##
+            Button.ANY: []  # Listeners are higher order functions. ##
         }
 
     def add(self, button, function):
         self.listeners.setdefault(button, []).append(function)
 
     def call(self, button):
-        if button != Buttons.ANY:
+        if button != Button.ANY:
             debug("Pressed button: %s" % button)
-            self.call(Buttons.ANY)
+            self.call(Button.ANY)
 
         if not button in self.listeners:
             return
@@ -99,15 +108,15 @@ class ButtonListeners:
 class StickListeners:
     def __init__(self):
         self.listeners = {
-            Sticks.ANY: []  # Listeners are higher order functions.
+            Stick.ANY: []  # Listeners are higher order functions.
         }
 
     def add(self, stick, function):
         self.listeners.setdefault(stick, []).append(function)
 
     def call(self, stick, value):
-        if stick != Sticks.ANY:
-            self.call(Sticks.ANY, value)
+        if stick != Stick.ANY:
+            self.call(Stick.ANY, value)
         
         if not stick in self.listeners:
             return

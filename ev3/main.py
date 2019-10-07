@@ -10,7 +10,7 @@ Other algorithms can be run on the brick by running the file directly.
 from logging import debug, prepare_console
 import time
 
-from devices.controller import buttons, sticks, Buttons, Sticks, is_controller_connected
+from devices.controller import buttons, sticks, Button, Stick, is_controller_connected
 
 
 def main():
@@ -22,7 +22,7 @@ def main():
     def stop():
         State.run = False
 
-    buttons.add(Buttons.START, stop)
+    buttons.add(Button.START, stop)
 
     while (State.run):
         time.sleep(1)
