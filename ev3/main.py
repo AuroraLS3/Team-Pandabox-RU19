@@ -9,6 +9,7 @@ Other algorithms can be run on the brick by running the file directly.
 
 from logging import debug, prepare_console
 import time
+import evdev
 
 from devices.controller import buttons, sticks, Button, Stick, is_controller_connected
 
@@ -22,6 +23,10 @@ def main():
     def stop():
         State.run = False
 
+    devices = [evdev.InputDevice(fn) for fn in evdev.list_devices()]
+    for device in devices:
+        debug(device.name.encode('ascii', 'ignore').decode('ascii'))
+
     buttons.add(Button.START, stop)
 
     while (State.run):
@@ -34,12 +39,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-'''
-    for fn in evdev.list_devices():
-        debug(fn)
-
-    devices = [evdev.InputDevice(fn) for fn in evdev.list_devices()]
-    for device in devices:
-        debug(device.name.encode('ascii', 'ignore').decode('ascii'))
-'''
