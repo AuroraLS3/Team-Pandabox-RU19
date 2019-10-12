@@ -17,11 +17,12 @@ import evdev
 
 from devices.controller import buttons, sticks, Button, Stick
 from move.custom_tank import CustomMoveTank
-from ev3dev2.motor import MoveTank, OUTPUT_A, OUTPUT_B, OUTPUT_D, MediumMotor
+from ev3dev2.motor import OUTPUT_A, OUTPUT_B, OUTPUT_D, MediumMotor
 from tri_centrifuge import Centrifuge
 from calibrator import runCalibrator
 
 from move.white_line import runWhiteLine
+from devices.ir_controller import runIrController
 
 
 def main():
@@ -40,7 +41,7 @@ def main():
         picNo = 1
         speedL = 0
         speedR = 0
-        speedArm = 0
+        armOpen = False
 
     tank = CustomMoveTank(OUTPUT_D, OUTPUT_A)
     arm = MediumMotor(OUTPUT_B)
@@ -73,10 +74,10 @@ def main():
         main_thread.raise_exception()
 
     def openArm():
-        State.speedArm = 50
+        State.armOpen = True
     
     def closeArm():
-        State.speedArm = -50
+        State.armOpen = False
 
     debug("Connected devices:")
     devices = [evdev.InputDevice(fn) for fn in evdev.list_devices()]
@@ -110,7 +111,13 @@ def main():
                     tank.on(State.speedL, State.speedR)
                 else:
                     tank.off()
-                arm.on(State.speedArm)
+                
+                if State.armOpen and not arm.is_overloaded:
+                    arm.on(-30, block=False)
+                elif not State.armOpen and not arm.is_overloaded:
+                    arm.on(30, block=False)
+                else:
+                    arm.off()
             elif State.program == Program.WHITE_LINE:
                 runWhiteLine()
             elif State.program == Program.CALIBRATOR:
