@@ -17,6 +17,7 @@ import evdev
 from devices.controller import buttons, sticks, Button, Stick, is_controller_connected
 from move.custom_tank import CustomMoveTank
 from ev3dev2.motor import MoveTank, OUTPUT_A, OUTPUT_D
+from tri_centrifuge import Centrifuge
 
 def main():
     prepare_console()
@@ -33,6 +34,7 @@ def main():
         speedR = 0
 
     tank = CustomMoveTank(OUTPUT_D, OUTPUT_A)
+    centrifuge = Centrifuge(OUTPUT_D, OUTPUT_A)
 
     def stop():
         State.run = False
@@ -40,8 +42,11 @@ def main():
     def turn(degrees):
         return lambda: tank.turn(degrees)
 
-    def move():
-        tank.move_cm(10)
+    # def move_fw():
+    #     tank.move_cm(10)
+
+    # def move_bw():
+    #     tank.move_cm(-10)
 
     def left(value):
         State.speedL = value
@@ -104,7 +109,8 @@ def main():
     buttons.add(Button.START, stop)
     buttons.add(Button.RIGHT, turn(90))
     buttons.add(Button.LEFT, turn(-90))
-    buttons.add(Button.UP, move)
+    buttons.add(Button.UP, centrifuge.move_fw)
+    buttons.add(Button.DOWN, centrifuge.move_bw)
 
     def runWhiteLine():
         State.program = not Program.WHITE_LINE
