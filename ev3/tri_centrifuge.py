@@ -8,9 +8,9 @@ from ev3dev2.motor import SpeedDPS, SpeedRPM, SpeedRPS, SpeedDPM
 class Centrifuge(MoveTank):
     times_fw = 0
     times_bw = 0
-    speed = 80
+    speed = 90
     long_jump = 7
-    short_jump = 5
+    short_jump = 4
 
     def move_fw(self):
         if(times_fw == 0):
