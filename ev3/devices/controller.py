@@ -94,6 +94,9 @@ class ButtonListeners:
     def add(self, button, function):
         self.listeners.setdefault(button, []).append(function)
 
+    def clear(self):
+        self.listeners.clear()
+
     def call(self, button):
         if button != Button.ANY:
             debug("Pressed button: %s" % button)
@@ -113,6 +116,9 @@ class StickListeners:
 
     def add(self, stick, function):
         self.listeners.setdefault(stick, []).append(function)
+
+    def clear(self):
+        self.listeners.clear()
 
     def call(self, stick, value):
         if stick != Stick.ANY:

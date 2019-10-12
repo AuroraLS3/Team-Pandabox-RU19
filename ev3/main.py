@@ -10,19 +10,23 @@ Other algorithms can be run on the brick by running the file directly.
 from debug import debug, prepare_console
 import time
 import threading
+import ctypes
 
 import evdev
 
 from devices.controller import buttons, sticks, Button, Stick, is_controller_connected
 from move.custom_tank import CustomMoveTank
 from ev3dev2.motor import MoveTank, OUTPUT_A, OUTPUT_D
-from devices.camera import Imaging
 
 def main():
     prepare_console()
 
+    class Program:
+        CONTROLLER = "controller"
+        WHITE_LINE = "white_line"
+
     class State:
-        runWhiteLine = False
+        program = Program.CONTROLLER
         run = True
         picNo = 1
         speedL = 0
@@ -36,23 +40,14 @@ def main():
     def turn(degrees):
         return lambda: tank.turn(degrees)
 
-    def move(): 
+    def move():
         tank.move_cm(10)
-
-    def snap():
-        imaging_thread = Imaging()
-        imaging_thread.setDaemon(True)
-        imaging_thread.start()
 
     def left(value):
         State.speedL = value
 
     def right(value):
         State.speedR = value
-
-    def runWhiteLine():
-        State.runWhiteLine = not State.runWhiteLine
-        mainThread.raiseException()
 
     debug("Connected devices:")
     devices = [evdev.InputDevice(fn) for fn in evdev.list_devices()]
@@ -69,12 +64,7 @@ def main():
         def run(self):
             while (State.run):
                 try:
-                    if State.speedL != 0 or State.speedR != 0:
-                        tank.on(State.speedR, State.speedL)
-                    elif State.runWhiteLine:
-                        runWhiteLine()
-                    else:
-                        tank.off()
+                    self.runAlgorithm()
                 except:
                     continue
 
@@ -82,25 +72,46 @@ def main():
             # allow reading of console output
             time.sleep(10)
 
-        def raise_exception(self): 
-            thread_id = self.get_id() 
-            res = ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id, 
-                ctypes.py_object(SystemExit)) 
-            if res > 1: 
-                ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id, 0) 
+        def runAlgorithm(self):
+            if (State.program == Program.CONTROLLER):
+                if State.speedL != 0 or State.speedR != 0:
+                    tank.on(State.speedR, State.speedL)
+                else:
+                    tank.off()
+            elif State.program == Program.WHITE_LINE:
+                runWhiteLine()
+
+        def get_id(self):
+            # returns id of the respective thread
+            if hasattr(self, '_thread_id'):
+                return super._thread_id
+            for id, thread in threading._active.items():
+                if thread is self:
+                    return id
+
+        def raise_exception(self):
+            thread_id = self.get_id()
+            res = ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id,
+                                                             ctypes.py_object(SystemExit))
+            if res > 1:
+                ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id, 0)
                 print('Exception raise failure')
-                
-    mainThread = MainThread()
-    mainThread.setDaemon(True)
-    mainThread.start()
+
+    main_thread = MainThread()
+    main_thread.setDaemon(True)
+    main_thread.start()
 
     buttons.add(Button.START, stop)
     buttons.add(Button.RIGHT, turn(90))
     buttons.add(Button.LEFT, turn(-90))
     buttons.add(Button.UP, move)
-    buttons.add(Button.R1, snap)
+
+    def runWhiteLine():
+        State.program = not Program.WHITE_LINE
+        main_thread.raise_exception()
 
     buttons.add(Button.SELECT, runWhiteLine)
+
 
 if __name__ == '__main__':
     main()
