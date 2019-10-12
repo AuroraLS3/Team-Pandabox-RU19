@@ -50,10 +50,15 @@ def runCalibrator():
     # drive forward 240cm
     # stop to wait for usb
 
+    debug("calibrator: move forward")
     moveTank.move_cm(70)
+    debug("calibrator: turn 90")
     moveTank.turn(90)
+    debug("calibrator: move forward with distance from left edge")
     moveWithDistance(240, 10)
+    debug("calibrator: wait for usb drop")
     sleep(3)
+    debug("calibrator: move forward with distance from left edge")
     moveWithDistance(40, 10)
 
         
