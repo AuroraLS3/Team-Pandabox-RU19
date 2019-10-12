@@ -32,17 +32,17 @@ def runCalibrator():
         step = 10
         turn = 0.5
 
-        while movedLength < moveLength:
+        while movedLength < moveLengthCm:
             proximity = proximityScale * infrared.proximity
 
             debug("proximity cm " + str(proximity))
 
             if proximity < distance:
-                moveTank.move_cm(step + turn, step - turn)
-            else
-                moveTank.move_cm(step - turn, step + turn)
+                moveTank.move_cm_lopsided(step + turn, step - turn)
+            else:
+                moveTank.move_cm_lopsided(step - turn, step + turn)
             
-            moveLength += step
+            moveLengthCm += step
 
     # 70cm forward
     # turn 90 degrees
@@ -53,7 +53,7 @@ def runCalibrator():
     moveTank.move_cm(70)
     moveTank.turn(90)
     moveWithDistance(240, 10)
-    time.sleep(3)
+    sleep(3)
     moveWithDistance(40, 10)
 
         

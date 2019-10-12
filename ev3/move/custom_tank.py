@@ -3,10 +3,10 @@
 
 from ev3dev2.motor import MoveTank
 
+defaultSpeed = 60
+
 
 class CustomMoveTank(MoveTank):
-
-    defaultSpeed = 60
 
     def turn(self, degrees):
 
@@ -19,7 +19,7 @@ class CustomMoveTank(MoveTank):
         speed = -defaultSpeed if negative_turn else defaultSpeed
 
         # rotations = (degrees - degrees % 360) / 360
-        degrees = degrees #- rotations * 360
+        degrees = degrees  # - rotations * 360
 
         # Set all parameters
         # if rotations != 0:
@@ -30,27 +30,31 @@ class CustomMoveTank(MoveTank):
             self.right_motor.on_for_degrees(-speed,
                                             degrees=degrees, block=False)
 
-    def centimetersToDegrees(self, centimeters)
+    def centimetersToDegrees(self, centimeters):
         return centimeters * 70
 
-    def getSpeed(degrees):
+    def getSpeed(self, degrees):
         negative_turn = degrees < 0
         if negative_turn:
             degrees = -degrees
 
         return -defaultSpeed if negative_turn else defaultSpeed
 
-    def move_cm(self, leftCm, rightCm, block = False)
-        leftDegrees = centimetersToDegrees(leftCm)
-        rightDegrees = centimetersToDegrees(rightCm)
+    def move_cm_lopsided(self, leftCm, rightCm, block=False):
+        leftDegrees = self.centimetersToDegrees(leftCm)
+        rightDegrees = self.centimetersToDegrees(rightCm)
 
         if leftDegrees != 0:
-            self.left_motor.on_for_degrees(-speed, degrees=leftDegrees, block=False)
+            speed = self.getSpeed(leftDegrees)
+            self.left_motor.on_for_degrees(-speed,
+                                           degrees=leftDegrees, block=False)
         if rightDegrees != 0:
-            self.right_motor.on_for_degrees(-speed, degrees=rightDegrees, block=block)
+            speed = self.getSpeed(rightDegrees)
+            self.right_motor.on_for_degrees(-speed,
+                                            degrees=rightDegrees, block=block)
 
     def move_cm(self, centimeters):
-        degrees = centimetersToDegrees(centimeters)
+        degrees = self.centimetersToDegrees(centimeters)
 
         # rotations = (degrees - degrees % 360) / 360
         # degrees = degrees - rotations * 360
@@ -61,5 +65,7 @@ class CustomMoveTank(MoveTank):
         #     self.left_motor.on_for_rotations(speed, rotations, block=False)
         #     self.right_motor.on_for_rotations(speed, rotations, block=True)
         if degrees != 0:
-            self.left_motor.on_for_degrees(-speed, degrees=degrees, block=False)
-            self.right_motor.on_for_degrees(-speed, degrees=degrees, block=False)
+            self.left_motor.on_for_degrees(-speed,
+                                           degrees=degrees, block=False)
+            self.right_motor.on_for_degrees(-speed,
+                                            degrees=degrees, block=False)
