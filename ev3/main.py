@@ -9,6 +9,8 @@ Other algorithms can be run on the brick by running the file directly.
 
 from debug import debug, prepare_console
 import time
+import threading
+
 import evdev
 
 from devices.controller import buttons, sticks, Button, Stick, is_controller_connected
@@ -20,6 +22,7 @@ def main():
     prepare_console()
 
     class State:
+        runWhiteLine = False
         run = True
         picNo = 1
         speedL = 0
@@ -47,31 +50,57 @@ def main():
     def right(value):
         State.speedR = value
 
+    def runWhiteLine():
+        State.runWhiteLine = not State.runWhiteLine
+        mainThread.raiseException()
+
     debug("Connected devices:")
     devices = [evdev.InputDevice(fn) for fn in evdev.list_devices()]
     for device in devices:
         debug(device.name.encode('ascii', 'ignore').decode('ascii'))
 
+    sticks.add(Stick.LEFT_Y, left)
+    sticks.add(Stick.RIGHT_Y, right)
+
+    class MainThread(threading.Thread):
+        def __init__(self):
+            threading.Thread.__init__(self)
+
+        def run(self):
+            while (State.run):
+                try:
+                    if State.speedL != 0 or State.speedR != 0:
+                        tank.on(State.speedR, State.speedL)
+                    elif State.runWhiteLine:
+                        runWhiteLine()
+                    else:
+                        tank.off()
+                except:
+                    continue
+
+            debug("Shutting down in 10 seconds")
+            # allow reading of console output
+            time.sleep(10)
+
+        def raise_exception(self): 
+            thread_id = self.get_id() 
+            res = ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id, 
+                ctypes.py_object(SystemExit)) 
+            if res > 1: 
+                ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id, 0) 
+                print('Exception raise failure')
+                
+    mainThread = MainThread()
+    mainThread.setDaemon(True)
+    mainThread.start()
+
     buttons.add(Button.START, stop)
     buttons.add(Button.RIGHT, turn(90))
     buttons.add(Button.LEFT, turn(-90))
     buttons.add(Button.UP, move)
-    
     buttons.add(Button.R1, snap)
 
-    sticks.add(Stick.LEFT_Y, left)
-    sticks.add(Stick.RIGHT_Y, right)
-
-    while (State.run):
-        if State.speedL != 0 or State.speedR != 0:
-            tank.on(State.speedR, State.speedL)
-        else:
-            tank.off()
-
-    debug("Shutting down in 10 seconds")
-    # allow reading of console output
-    time.sleep(10)
-
+    buttons.add(Button.SELECT, runWhiteLine)
 
 if __name__ == '__main__':
     main()

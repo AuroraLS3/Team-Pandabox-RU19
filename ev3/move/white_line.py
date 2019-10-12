@@ -10,47 +10,49 @@ from ev3dev2.display import Display
 from ev3dev2.button import Button
 from ev3dev2.sound import Sound
 
-# valkoinen mitattu 70, harmaa mitattu 12, keskiarvo ^40
+def runWhiteLine():
 
-# taustavari
-#ridColor = 20 # maalarinteippi
-ridColor = 40 # valkoinen paperi
+    # valkoinen mitattu 70, harmaa mitattu 12, keskiarvo ^40
+
+    # taustavari
+    #ridColor = 20 # maalarinteippi
+    ridColor = 40 # valkoinen paperi
 
 
-# Nopeus
-speed = 25
-counter_max = 5
+    # Nopeus
+    speed = 25
+    counter_max = 5
 
-button = Button()
-colorS = ColorSensor(INPUT_3)
-sound = Sound()
+    button = Button()
+    colorS = ColorSensor(INPUT_3)
+    sound = Sound()
 
-# ajaa eteenpain
-tank_pair = MoveTank(OUTPUT_A, OUTPUT_D)
-# kaantyy 2 sekunttia
+    # ajaa eteenpain
+    tank_pair = MoveTank(OUTPUT_A, OUTPUT_D)
+    # kaantyy 2 sekunttia
 
-tank_pair.off()
+    tank_pair.off()
 
-sound.beep()
+    sound.beep()
 
-# Suoritussilmukka
-while True:
-    intensity = colorS.reflected_light_intensity
-
-    while (intensity > ridColor):  # viivalla
+    # Suoritussilmukka
+    while True:
         intensity = colorS.reflected_light_intensity
-        tank_pair.on(50, 50)  # Eteenpäin
-        counter_max = 5 # alustetaan viivanhaun sektorin leveys
-    
-    
-    if (intensity <= ridColor): #Ei viivalla -> alusta viivanhakumuuttujat
-        speed = -speed
-    
-    i = 0
-    while (intensity <= ridColor and i < counter_max): # Ei viivalla -> 
-        intensity = colorS.reflected_light_intensity
-        tank_pair.on(speed, -speed) # vasemman ja oikean nopeudet, kääntyy vasemmalle
-        i += 1
 
-    counter_max += counter_max
+        while (intensity > ridColor):  # viivalla
+            intensity = colorS.reflected_light_intensity
+            tank_pair.on(50, 50)  # Eteenpäin
+            counter_max = 5 # alustetaan viivanhaun sektorin leveys
+        
+        
+        if (intensity <= ridColor): #Ei viivalla -> alusta viivanhakumuuttujat
+            speed = -speed
+        
+        i = 0
+        while (intensity <= ridColor and i < counter_max): # Ei viivalla -> 
+            intensity = colorS.reflected_light_intensity
+            tank_pair.on(speed, -speed) # vasemman ja oikean nopeudet, kääntyy vasemmalle
+            i += 1
+
+        counter_max += counter_max
         
