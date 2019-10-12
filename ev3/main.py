@@ -10,17 +10,21 @@ Other algorithms can be run on the brick by running the file directly.
 from debug import debug, prepare_console
 import time
 import threading
+from threading import Event
 import ctypes
 
 import evdev
 
-from devices.controller import buttons, sticks, Button, Stick, is_controller_connected
+from devices.controller import buttons, sticks, Button, Stick
 from move.custom_tank import CustomMoveTank
 from ev3dev2.motor import MoveTank, OUTPUT_A, OUTPUT_D
 from tri_centrifuge import Centrifuge
 
+from move.white_line import runWhiteLine
+
 def main():
     prepare_console()
+
 
     class Program:
         CONTROLLER = "controller"
@@ -62,8 +66,11 @@ def main():
     sticks.add(Stick.LEFT_Y, left)
     sticks.add(Stick.RIGHT_Y, right)
 
+    ready = Event()
+
     class MainThread(threading.Thread):
-        def __init__(self):
+        def __init__(self, event=None):
+            self.event = event
             threading.Thread.__init__(self)
 
         def run(self):
@@ -72,15 +79,12 @@ def main():
                     self.runAlgorithm()
                 except:
                     continue
-
-            debug("Shutting down in 10 seconds")
-            # allow reading of console output
-            time.sleep(10)
+            self.event.set()
 
         def runAlgorithm(self):
             if (State.program == Program.CONTROLLER):
                 if State.speedL != 0 or State.speedR != 0:
-                    tank.on(State.speedR, State.speedL)
+                    tank.on(State.speedL, State.speedR)
                 else:
                     tank.off()
             elif State.program == Program.WHITE_LINE:
@@ -102,7 +106,7 @@ def main():
                 ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id, 0)
                 print('Exception raise failure')
 
-    main_thread = MainThread()
+    main_thread = MainThread(ready)
     main_thread.setDaemon(True)
     main_thread.start()
 
@@ -112,11 +116,16 @@ def main():
     buttons.add(Button.UP, centrifuge.move_fw)
     buttons.add(Button.DOWN, centrifuge.move_bw)
 
-    def runWhiteLine():
-        State.program = not Program.WHITE_LINE
-        main_thread.raise_exception()
+    def setWhiteline():
+        State.program = Program.WHITE_LINE
+    def setController():
+        State.program = Program.CONTROLLER
 
-    buttons.add(Button.SELECT, runWhiteLine)
+    buttons.add(Button.CIRCLE, setWhiteline)
+    buttons.add(Button.X, setController)
+    buttons.add(Button.SELECT, lambda: main_thread.raise_exception())
+
+    ready.wait()
 
 
 if __name__ == '__main__':
