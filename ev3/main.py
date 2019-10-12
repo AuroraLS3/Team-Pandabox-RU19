@@ -66,6 +66,11 @@ def main():
     def right(value):
         State.speedR = value
 
+    def abort():
+        debug("abort raising exception in main thread")
+        main_thread.raise_exception()
+
+
     debug("Connected devices:")
     devices = [evdev.InputDevice(fn) for fn in evdev.list_devices()]
     for device in devices:
@@ -144,7 +149,7 @@ def main():
     buttons.add(Button.TRIANGLE, setIRController)
 
     # Quit current program
-    buttons.add(Button.SELECT, lambda: main_thread.raise_exception())
+    buttons.add(Button.SELECT, abort)
 
     ready.wait()
 
