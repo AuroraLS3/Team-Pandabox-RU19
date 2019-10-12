@@ -23,14 +23,15 @@ from calibrator import runCalibrator
 
 from move.white_line import runWhiteLine
 
+
 def main():
     prepare_console()
-
 
     class Program:
         CONTROLLER = "controller"
         WHITE_LINE = "white_line"
         CALIBRATOR = "calibrator"
+        CENTRIFUGE = "centrifuge"
 
     class State:
         program = Program.CONTROLLER
@@ -48,11 +49,15 @@ def main():
     def turn(degrees):
         return lambda: tank.turn(degrees)
 
-    # def move_fw():
-    #     tank.move_cm(10)
+    def move_fw():
+        State.program = Program.CENTRIFUGE
+        tank.on_for_rotations(60, 60, 5)
+        State.program = Program.CONTROLLER
 
-    # def move_bw():
-    #     tank.move_cm(-10)
+    def move_bw():
+        State.program = Program.CENTRIFUGE
+        tank.on_for_rotations(-60, -60, 5)
+        State.program = Program.CONTROLLER
 
     def left(value):
         State.speedL = value
@@ -117,11 +122,12 @@ def main():
     buttons.add(Button.START, stop)
     buttons.add(Button.RIGHT, turn(90))
     buttons.add(Button.LEFT, turn(-90))
-    buttons.add(Button.UP, centrifuge.move_fw)
-    buttons.add(Button.DOWN, centrifuge.move_bw)
+    buttons.add(Button.UP, move_fw)
+    buttons.add(Button.DOWN, move_bw)
 
     def setWhiteline():
         State.program = Program.WHITE_LINE
+
     def setController():
         State.program = Program.CONTROLLER
     def setCalibrator():
