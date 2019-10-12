@@ -7,8 +7,7 @@ from ev3dev2.motor import SpeedDPS, SpeedRPM, SpeedRPS, SpeedDPM
 
 class Centrifuge(MoveTank):
     def move_fw(self):
-        self.on_for_rotation()
-        a = 1
+        self.on_for_rotations(60, 60, 5)
 
     def move_bw(self):
-        tank.move_cm(-10)
+        self.on_for_rotations(-60, -60, 5)
