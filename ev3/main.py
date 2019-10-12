@@ -51,12 +51,12 @@ def main():
 
     def move_fw():
         State.program = Program.CENTRIFUGE
-        tank.on_for_rotations(60, 60, 5)
+        centrifuge.move_fw()
         State.program = Program.CONTROLLER
 
     def move_bw():
         State.program = Program.CENTRIFUGE
-        tank.on_for_rotations(-60, -60, 5)
+        centrifuge.move_bw()
         State.program = Program.CONTROLLER
 
     def left(value):
