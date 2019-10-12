@@ -17,13 +17,13 @@ def steer(motor, direction):
 
 def runIrController():
     rc = InfraredSensor(INPUT_1)
-    lA = LargeMotor(OUTPUT_A)
-    lD = LargeMotor(OUTPUT_D)
+    leftMotor = LargeMotor(OUTPUT_D)
+    rightMotor = LargeMotor(OUTPUT_A)
 
-    rc.on_channel1_top_left = steer(lA, 1)
-    rc.on_channel1_top_right = steer(lD, 1)
-    rc.on_channel1_bottom_left = steer(lA, -1)
-    rc.on_channel1_bottom_left = steer(lD, -1)
+    rc.on_channel1_top_left = steer(leftMotor, 1)
+    rc.on_channel1_top_right = steer(rightMotor, 1)
+    rc.on_channel1_bottom_left = steer(leftMotor, -1)
+    rc.on_channel1_bottom_right = steer(rightMotor, -1)
 
     while True:
         rc.process()

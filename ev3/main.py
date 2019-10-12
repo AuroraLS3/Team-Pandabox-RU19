@@ -19,7 +19,7 @@ from devices.controller import buttons, sticks, Button, Stick
 from move.custom_tank import CustomMoveTank
 from ev3dev2.motor import OUTPUT_A, OUTPUT_B, OUTPUT_D, MediumMotor
 from tri_centrifuge import Centrifuge
-from calibrator import runCalibrator
+# from calibrator import runCalibrator
 
 from move.white_line import runWhiteLine
 from devices.ir_controller import runIrController
@@ -121,7 +121,7 @@ def main():
             elif State.program == Program.WHITE_LINE:
                 runWhiteLine()
             elif State.program == Program.CALIBRATOR:
-                runCalibrator()
+                # runCalibrator()
                 State.program = Program.CONTROLLER
             elif State.program == Program.IRCONTROLLER:
                 runIrController()
