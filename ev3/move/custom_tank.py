@@ -8,7 +8,7 @@ defaultSpeed = 60
 
 class CustomMoveTank(MoveTank):
 
-    def turn(self, degrees):
+    def turn(self, degrees, block=False):
 
         degrees = degrees * 5.75
 
@@ -28,7 +28,7 @@ class CustomMoveTank(MoveTank):
         if degrees != 0:
             self.left_motor.on_for_degrees(speed, degrees=degrees, block=False)
             self.right_motor.on_for_degrees(-speed,
-                                            degrees=degrees, block=False)
+                                            degrees=degrees, block=block)
 
     def centimetersToDegrees(self, centimeters):
         return centimeters * 70
@@ -53,7 +53,7 @@ class CustomMoveTank(MoveTank):
             self.right_motor.on_for_degrees(-speed,
                                             degrees=rightDegrees, block=block)
 
-    def move_cm(self, centimeters):
+    def move_cm(self, centimeters, block=False):
         degrees = self.centimetersToDegrees(centimeters)
 
         # rotations = (degrees - degrees % 360) / 360
@@ -68,4 +68,4 @@ class CustomMoveTank(MoveTank):
             self.left_motor.on_for_degrees(-speed,
                                            degrees=degrees, block=False)
             self.right_motor.on_for_degrees(-speed,
-                                            degrees=degrees, block=False)
+                                            degrees=degrees, block=block)

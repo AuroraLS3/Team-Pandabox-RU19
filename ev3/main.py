@@ -91,6 +91,7 @@ def main():
                 try:
                     self.runAlgorithm()
                 except:
+                    debug("exception received. Current program aborted.")
                     continue
             self.event.set()
 
@@ -104,6 +105,7 @@ def main():
                 runWhiteLine()
             elif State.program == Program.CALIBRATOR:
                 runCalibrator()
+                State.program = Program.CONTROLLER
             elif State.program == Program.IRCONTROLLER:
                 runIrController()
 
@@ -145,7 +147,7 @@ def main():
 
     buttons.add(Button.CIRCLE, setWhiteline)
     buttons.add(Button.X, setController)
-    buttons.add(Button.SQUARE, runCalibrator)
+    buttons.add(Button.SQUARE, setCalibrator)
     buttons.add(Button.TRIANGLE, setIRController)
 
     # Quit current program
