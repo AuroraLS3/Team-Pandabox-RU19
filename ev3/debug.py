@@ -5,7 +5,7 @@ Debug logging utility.
 
 Example usage:
 
-    from logging import debug
+    from debug import debug
 
     debug("Message to print to VSCode console")
 '''

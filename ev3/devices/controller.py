@@ -34,7 +34,7 @@ import threading
 import math
 import time
 
-from logging import debug
+from debug import debug
 
 ## Some helpers ##
 
