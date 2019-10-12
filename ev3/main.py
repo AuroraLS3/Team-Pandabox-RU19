@@ -32,6 +32,7 @@ def main():
         WHITE_LINE = "white_line"
         CALIBRATOR = "calibrator"
         CENTRIFUGE = "centrifuge"
+        IRCONTROLLER ="ircontroller"
 
     class State:
         program = Program.CONTROLLER
@@ -98,6 +99,8 @@ def main():
                 runWhiteLine()
             elif State.program == Program.CALIBRATOR:
                 runCalibrator()
+            elif State.program == Program.IRCONTROLLER:
+                runIrController()
 
         def get_id(self):
             # returns id of the respective thread
@@ -132,10 +135,13 @@ def main():
         State.program = Program.CONTROLLER
     def setCalibrator():
         State.program = Program.CALIBRATOR
+    def setIRController():
+        State.program = Program.IRCONTROLLER
 
     buttons.add(Button.CIRCLE, setWhiteline)
     buttons.add(Button.X, setController)
     buttons.add(Button.SQUARE, runCalibrator)
+    buttons.add(Button.TRIANGLE, setIRController)
 
     # Quit current program
     buttons.add(Button.SELECT, lambda: main_thread.raise_exception())

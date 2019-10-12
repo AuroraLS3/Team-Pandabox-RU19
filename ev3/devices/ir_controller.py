@@ -1,2 +1,3 @@
 import evdev
 
+def runIrController():
