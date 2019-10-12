@@ -17,7 +17,7 @@ import evdev
 
 from devices.controller import buttons, sticks, Button, Stick
 from move.custom_tank import CustomMoveTank
-from ev3dev2.motor import MoveTank, OUTPUT_A, OUTPUT_D
+from ev3dev2.motor import MoveTank, OUTPUT_A, OUTPUT_B, OUTPUT_D, MediumMotor
 from tri_centrifuge import Centrifuge
 from calibrator import runCalibrator
 
@@ -40,8 +40,10 @@ def main():
         picNo = 1
         speedL = 0
         speedR = 0
+        speedArm = 0
 
     tank = CustomMoveTank(OUTPUT_D, OUTPUT_A)
+    arm = MediumMotor(OUTPUT_B)
     centrifuge = Centrifuge(OUTPUT_D, OUTPUT_A)
 
     def stop():
@@ -70,6 +72,11 @@ def main():
         debug("abort raising exception in main thread")
         main_thread.raise_exception()
 
+    def openArm():
+        State.speedArm = 50
+    
+    def closeArm():
+        State.speedArm = -50
 
     debug("Connected devices:")
     devices = [evdev.InputDevice(fn) for fn in evdev.list_devices()]
@@ -78,6 +85,8 @@ def main():
 
     sticks.add(Stick.LEFT_Y, left)
     sticks.add(Stick.RIGHT_Y, right)
+    buttons.add(Button.L2, closeArm)
+    buttons.add(Button.R2, openArm)
 
     ready = Event()
 
@@ -101,6 +110,7 @@ def main():
                     tank.on(State.speedL, State.speedR)
                 else:
                     tank.off()
+                arm.on(State.speedArm)
             elif State.program == Program.WHITE_LINE:
                 runWhiteLine()
             elif State.program == Program.CALIBRATOR:
