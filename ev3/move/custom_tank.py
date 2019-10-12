@@ -6,6 +6,8 @@ from ev3dev2.motor import MoveTank
 
 class CustomMoveTank(MoveTank):
 
+    defaultSpeed = 60
+
     def turn(self, degrees):
 
         degrees = degrees * 5.75
@@ -14,7 +16,7 @@ class CustomMoveTank(MoveTank):
         if negative_turn:
             degrees = -degrees
 
-        speed = -60 if negative_turn else 60
+        speed = -defaultSpeed if negative_turn else defaultSpeed
 
         # rotations = (degrees - degrees % 360) / 360
         degrees = degrees #- rotations * 360
@@ -28,8 +30,27 @@ class CustomMoveTank(MoveTank):
             self.right_motor.on_for_degrees(-speed,
                                             degrees=degrees, block=False)
 
+    def centimetersToDegrees(self, centimeters)
+        return centimeters * 70
+
+    def getSpeed(degrees):
+        negative_turn = degrees < 0
+        if negative_turn:
+            degrees = -degrees
+
+        return -defaultSpeed if negative_turn else defaultSpeed
+
+    def move_cm(self, leftCm, rightCm, block = False)
+        leftDegrees = centimetersToDegrees(leftCm)
+        rightDegrees = centimetersToDegrees(rightCm)
+
+        if leftDegrees != 0:
+            self.left_motor.on_for_degrees(-speed, degrees=leftDegrees, block=False)
+        if rightDegrees != 0:
+            self.right_motor.on_for_degrees(-speed, degrees=rightDegrees, block=block)
+
     def move_cm(self, centimeters):
-        degrees = centimeters * 70
+        degrees = centimetersToDegrees(centimeters)
 
         # rotations = (degrees - degrees % 360) / 360
         # degrees = degrees - rotations * 360

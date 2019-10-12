@@ -19,6 +19,7 @@ from devices.controller import buttons, sticks, Button, Stick
 from move.custom_tank import CustomMoveTank
 from ev3dev2.motor import MoveTank, OUTPUT_A, OUTPUT_D
 from tri_centrifuge import Centrifuge
+from calibrator import runCalibrator
 
 from move.white_line import runWhiteLine
 
@@ -29,6 +30,7 @@ def main():
     class Program:
         CONTROLLER = "controller"
         WHITE_LINE = "white_line"
+        CALIBRATOR = "calibrator"
 
     class State:
         program = Program.CONTROLLER
@@ -89,6 +91,8 @@ def main():
                     tank.off()
             elif State.program == Program.WHITE_LINE:
                 runWhiteLine()
+            elif State.program == Program.CALIBRATOR:
+                runCalibrator()
 
         def get_id(self):
             # returns id of the respective thread
@@ -120,9 +124,14 @@ def main():
         State.program = Program.WHITE_LINE
     def setController():
         State.program = Program.CONTROLLER
+    def setCalibrator():
+        State.program = Program.CALIBRATOR
 
     buttons.add(Button.CIRCLE, setWhiteline)
     buttons.add(Button.X, setController)
+    buttons.add(Button.SQUARE, runCalibrator)
+
+    # Quit current program
     buttons.add(Button.SELECT, lambda: main_thread.raise_exception())
 
     ready.wait()
