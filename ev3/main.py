@@ -17,8 +17,8 @@ import evdev
 
 from devices.controller import buttons, sticks, Button, Stick
 from move.custom_tank import CustomMoveTank
-from ev3dev2.motor import OUTPUT_A, OUTPUT_B, OUTPUT_D, MediumMotor
-from tri_centrifuge import Centrifuge
+from ev3dev2.motor import OUTPUT_A, OUTPUT_B, OUTPUT_C, OUTPUT_D, MediumMotor
+# from tri_centrifuge import Centrifuge
 # from calibrator import runCalibrator
 
 from move.white_line import runWhiteLine
@@ -33,7 +33,7 @@ def main():
         WHITE_LINE = "white_line"
         CALIBRATOR = "calibrator"
         CENTRIFUGE = "centrifuge"
-        IRCONTROLLER ="ircontroller"
+        IRCONTROLLER = "ircontroller"
 
     class State:
         program = Program.CONTROLLER
@@ -45,7 +45,8 @@ def main():
 
     tank = CustomMoveTank(OUTPUT_D, OUTPUT_A)
     arm = MediumMotor(OUTPUT_B)
-    centrifuge = Centrifuge(OUTPUT_D, OUTPUT_A)
+    claw = MediumMotor(OUTPUT_C)
+    # centrifuge = Centrifuge(OUTPUT_D, OUTPUT_A)
 
     def stop():
         State.run = False
@@ -53,20 +54,24 @@ def main():
     def turn(degrees):
         return lambda: tank.turn(degrees)
 
-    def move_fw():
-        State.program = Program.CENTRIFUGE
-        centrifuge.move_fw()
-        State.program = Program.CONTROLLER
+    # def move_fw():
+    #     State.program = Program.CENTRIFUGE
+    #     centrifuge.move_fw()
+    #     State.program = Program.CONTROLLER
 
-    def move_bw():
-        State.program = Program.CENTRIFUGE
-        centrifuge.move_bw()
-        State.program = Program.CONTROLLER
+    # def move_bw():
+    #     State.program = Program.CENTRIFUGE
+    #     centrifuge.move_bw()
+    #     State.program = Program.CONTROLLER
 
     def left(value):
+        if abs(value) < 5:
+            value = 0
         State.speedL = value
 
     def right(value):
+        if abs(value) < 5:
+            value = 0
         State.speedR = value
 
     def abort():
@@ -74,10 +79,28 @@ def main():
         main_thread.raise_exception()
 
     def openArm():
+        if State.armOpen:
+            return
         State.armOpen = True
-    
+        while not arm.is_overloaded:
+            arm.on(-30, block=True)
+        arm.off()
+
     def closeArm():
+        if not State.armOpen:
+            return
         State.armOpen = False
+        while not arm.is_overloaded:
+            arm.on(30, block=True)
+        arm.off()
+
+    def downClaw():
+        claw.on_for_degrees(10, 30, block=True)
+        claw.off()
+
+    def upClaw():
+        claw.on_for_degrees(-10, 30, block=True)
+        claw.off()
 
     debug("Connected devices:")
     devices = [evdev.InputDevice(fn) for fn in evdev.list_devices()]
@@ -88,6 +111,8 @@ def main():
     sticks.add(Stick.RIGHT_Y, right)
     buttons.add(Button.L2, closeArm)
     buttons.add(Button.R2, openArm)
+    buttons.add(Button.R1, downClaw)
+    buttons.add(Button.L1, upClaw)
 
     ready = Event()
 
@@ -107,17 +132,12 @@ def main():
 
         def runAlgorithm(self):
             if (State.program == Program.CONTROLLER):
-                if State.speedL != 0 or State.speedR != 0:
-                    tank.on(State.speedL, State.speedR)
+                lspeed = State.speedL
+                rspeed = State.speedR
+                if lspeed != 0 or rspeed != 0:
+                    tank.on(lspeed, rspeed)
                 else:
                     tank.off()
-                
-                if State.armOpen and not arm.is_overloaded:
-                    arm.on(-30, block=False)
-                elif not State.armOpen and not arm.is_overloaded:
-                    arm.on(30, block=False)
-                else:
-                    arm.off()
             elif State.program == Program.WHITE_LINE:
                 runWhiteLine()
             elif State.program == Program.CALIBRATOR:
@@ -146,25 +166,20 @@ def main():
     main_thread.setDaemon(True)
     main_thread.start()
 
-    buttons.add(Button.START, stop)
-    buttons.add(Button.RIGHT, turn(90))
-    buttons.add(Button.LEFT, turn(-90))
-    buttons.add(Button.UP, move_fw)
-    buttons.add(Button.DOWN, move_bw)
-
     def setWhiteline():
         State.program = Program.WHITE_LINE
 
     def setController():
         State.program = Program.CONTROLLER
+
     def setCalibrator():
         State.program = Program.CALIBRATOR
+
     def setIRController():
         State.program = Program.IRCONTROLLER
 
     buttons.add(Button.CIRCLE, setWhiteline)
     buttons.add(Button.X, setController)
-    buttons.add(Button.SQUARE, setCalibrator)
     buttons.add(Button.TRIANGLE, setIRController)
 
     # Quit current program
