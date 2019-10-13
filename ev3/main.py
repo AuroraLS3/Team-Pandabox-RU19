@@ -135,7 +135,7 @@ def main():
                 lspeed = State.speedL
                 rspeed = State.speedR
                 if lspeed != 0 or rspeed != 0:
-                    tank.on(lspeed, rspeed)
+                    tank.on(rspeed, lspeed)
                 else:
                     tank.off()
             elif State.program == Program.WHITE_LINE:
