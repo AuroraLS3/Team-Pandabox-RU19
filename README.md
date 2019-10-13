@@ -1,5 +1,6 @@
 # Team-Pandabox-RU19
 Robot Uprising Team Pandabox -repository
+![Pandabox robo](https://github.com/Rsl1122/Team-Pandabox-RU19/blob/master/robo.jpg "Pandabox robo")
 
 # Track
 1. THE CACHE Line follower with one manual aid
